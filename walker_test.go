@@ -59,17 +59,17 @@ func TestWalk(t *testing.T) {
 		}
 
 		structWalker.Walk(testStruct)
-		g.Expect(walker.FieldCallbackCallCount()).To(Equal(1))
+		g.Expect(walker.FieldCallbackCallCount()).To(Equal(2))
 
 		field1 := walker.FieldCallbackArgsForCall(0)
 		g.Expect(field1.Parent).To(BeNil())
 		g.Expect(field1.StructField.Name).To(Equal("NamedStruct"))
 		g.Expect(field1.StructFieldValue.Interface()).To(Equal(struct{ String string }{String: "string"}))
 
-		// TODO this should recurse
-		//field2 := walker.FieldCallbackArgsForCall(1)
-		//g.Expect(field2.Parent).To(BeNil())
-		//g.Expect(field2.StructField.Name).To(Equal("String"))
-		//g.Expect(field2.StructFieldValue.Interface()).To(Equal("string"))
+		field2 := walker.FieldCallbackArgsForCall(1)
+		g.Expect(field2.Parent).ToNot(BeNil())
+		g.Expect(field2.Parent).To(Equal(&field1))
+		g.Expect(field2.StructField.Name).To(Equal("String"))
+		g.Expect(field2.StructFieldValue.Interface()).To(Equal("string"))
 	})
 }
