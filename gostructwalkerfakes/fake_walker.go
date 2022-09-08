@@ -8,19 +8,19 @@ import (
 )
 
 type FakeWalker struct {
-	FieldCallbackStub        func(gostructwalker.Field)
+	FieldCallbackStub        func(*gostructwalker.StructParser)
 	fieldCallbackMutex       sync.RWMutex
 	fieldCallbackArgsForCall []struct {
-		arg1 gostructwalker.Field
+		arg1 *gostructwalker.StructParser
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeWalker) FieldCallback(arg1 gostructwalker.Field) {
+func (fake *FakeWalker) FieldCallback(arg1 *gostructwalker.StructParser) {
 	fake.fieldCallbackMutex.Lock()
 	fake.fieldCallbackArgsForCall = append(fake.fieldCallbackArgsForCall, struct {
-		arg1 gostructwalker.Field
+		arg1 *gostructwalker.StructParser
 	}{arg1})
 	stub := fake.FieldCallbackStub
 	fake.recordInvocation("FieldCallback", []interface{}{arg1})
@@ -36,13 +36,13 @@ func (fake *FakeWalker) FieldCallbackCallCount() int {
 	return len(fake.fieldCallbackArgsForCall)
 }
 
-func (fake *FakeWalker) FieldCallbackCalls(stub func(gostructwalker.Field)) {
+func (fake *FakeWalker) FieldCallbackCalls(stub func(*gostructwalker.StructParser)) {
 	fake.fieldCallbackMutex.Lock()
 	defer fake.fieldCallbackMutex.Unlock()
 	fake.FieldCallbackStub = stub
 }
 
-func (fake *FakeWalker) FieldCallbackArgsForCall(i int) gostructwalker.Field {
+func (fake *FakeWalker) FieldCallbackArgsForCall(i int) *gostructwalker.StructParser {
 	fake.fieldCallbackMutex.RLock()
 	defer fake.fieldCallbackMutex.RUnlock()
 	argsForCall := fake.fieldCallbackArgsForCall[i]

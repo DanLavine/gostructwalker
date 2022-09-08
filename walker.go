@@ -12,8 +12,10 @@ type Walker interface {
 	// For each Public field in a struct, this function is called.
 	//
 	// PARAMS:
-	// @field - Current field we are working on. Contains any relevent info and struct location
-	FieldCallback(field Field)
+	// @structParser - Current field or struct we are working on. Contains any relevent info and struct location
+	//
+	// NOTE: We shouldn't change any of the fields, but thats possibly a lot of data to copy in a param. So pass a reference. Might regret this
+	FieldCallback(structParser *StructParser)
 }
 
 type structWalker struct {
@@ -41,7 +43,7 @@ func (s *structWalker) Walk(anyStruct interface{}) error {
 	case reflect.Struct:
 		s.walkFields(nil, reflectValueDereference)
 	default:
-		return fmt.Errorf("Expected a struct or pointer to struct,  but received a '%s'", reflectValueDereference.Kind().String())
+		return fmt.Errorf("Expected a struct or pointer to struct, but received a '%s'", reflectValueDereference.Kind().String())
 	}
 
 	return nil

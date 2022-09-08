@@ -2,7 +2,7 @@ package gostructwalker
 
 import "reflect"
 
-func (s *structWalker) walkFields(field *Field, anyStruct reflect.Value) {
+func (s *structWalker) walkFields(structParserParent *StructParser, anyStruct reflect.Value) {
 	for i := 0; i < anyStruct.NumField(); i++ {
 		structFieldValue := anyStruct.Field(i)
 
@@ -11,24 +11,23 @@ func (s *structWalker) walkFields(field *Field, anyStruct reflect.Value) {
 			continue
 		}
 
-		field := Field{
-			Parent:           field,
-			StructField:      reflect.TypeOf(anyStruct.Interface()).Field(i),
-			StructFieldValue: structFieldValue,
+		structParser := &StructParser{
+			Parent: structParserParent,
+			Field:  reflect.TypeOf(anyStruct.Interface()).Field(i),
+			Value:  structFieldValue,
 		}
 
-		s.walker.FieldCallback(field)
+		s.walker.FieldCallback(structParser)
 
-		s.traverse(&field, structFieldValue)
+		s.traverse(structParser, structFieldValue)
 	}
 }
 
-func (s *structWalker) traverse(parentField *Field, anyValue reflect.Value) {
-
+func (s *structWalker) traverse(structParserParent *StructParser, anyValue reflect.Value) {
 	valueDereference := pointerDereference(anyValue)
 
 	switch valueDereference.Kind() {
 	case reflect.Struct:
-		s.walkFields(parentField, valueDereference)
+		s.walkFields(structParserParent, valueDereference)
 	}
 }
