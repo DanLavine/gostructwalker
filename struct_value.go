@@ -36,9 +36,9 @@ func (sp *StructParser) GetFieldName() string {
 		}
 
 		if field == "" {
-			field = sp.Field.Name
+			field = currentSP.Field.Name
 		} else {
-			field = fmt.Sprintf("%s.%s", sp.Field.Name, field)
+			field = fmt.Sprintf("%s.%s", currentSP.Field.Name, field)
 		}
 
 		currentSP = currentSP.Parent
