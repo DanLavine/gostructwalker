@@ -41,7 +41,7 @@ func (sp *StructParser) GetFieldName() string {
 			field = fmt.Sprintf("%s.%s", sp.Field.Name, field)
 		}
 
-		currentSP = sp.Parent
+		currentSP = currentSP.Parent
 	}
 
 	return field

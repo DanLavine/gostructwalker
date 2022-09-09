@@ -1,9 +1,12 @@
 package gostructwalker
 
-import "reflect"
+import (
+	"reflect"
+)
 
 func (s *structWalker) walkFields(structParserParent *StructParser, anyStruct reflect.Value) {
 	for i := 0; i < anyStruct.NumField(); i++ {
+
 		structFieldValue := anyStruct.Field(i)
 
 		// This is a check for private fields that cannot return an interface. Ignore those fields
