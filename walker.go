@@ -18,17 +18,35 @@ type Walker interface {
 	FieldCallback(structParser *StructParser)
 }
 
-type structWalker struct {
-	walker Walker
+//counterfeiter:generate . StructWalker
+type StructWalker interface {
+	// Interface definition for the *structWalker struct
+	//
+	// PARAMS:
+	// @anyStruct - Struct or pointer to a Struct that will be walked.
+	//
+	// RETURNS:
+	// @error - nil if no errors. An immediate error if passed a non struct object
+	Walk(anyStruct interface{}) error
 }
 
-func New(walker Walker) (*structWalker, error) {
+type structWalker struct {
+	tagParser *tagParser
+	walker    Walker
+}
+
+func New(cfg Config, walker Walker) (*structWalker, error) {
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
+
 	if walker == nil {
 		return nil, fmt.Errorf("Received a nil walker")
 	}
 
 	return &structWalker{
-		walker: walker,
+		tagParser: &tagParser{TagKey: cfg.TagKey},
+		walker:    walker,
 	}, nil
 }
 
@@ -41,10 +59,8 @@ func (s *structWalker) Walk(anyStruct interface{}) error {
 
 	switch reflectValueDereference.Kind() {
 	case reflect.Struct:
-		s.walkFields(nil, reflectValueDereference)
+		return s.walkFields(nil, reflectValueDereference)
 	default:
 		return fmt.Errorf("Expected a struct or pointer to struct, but received a '%s'", reflectValueDereference.Kind().String())
 	}
-
-	return nil
 }
