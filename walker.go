@@ -13,8 +13,6 @@ type Walker interface {
 	//
 	// PARAMS:
 	// @structParser - Current field or struct we are working on. Contains any relevent info and struct location
-	//
-	// NOTE: We shouldn't change any of the fields, but thats possibly a lot of data to copy in a param. So pass a reference. Might regret this
 	FieldCallback(structParser *StructParser)
 }
 

@@ -1,4 +1,4 @@
-package gostructwalker_test
+package iterables_test
 
 import (
 	"testing"
