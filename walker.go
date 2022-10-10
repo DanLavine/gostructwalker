@@ -33,9 +33,9 @@ type structWalker struct {
 	walker    Walker
 }
 
-func New(cfg Config, walker Walker) (*structWalker, error) {
-	if err := cfg.validate(); err != nil {
-		return nil, err
+func New(tagKey string, walker Walker) (*structWalker, error) {
+	if tagKey == "" {
+		return nil, fmt.Errorf("required field 'tagKey' to be set")
 	}
 
 	if walker == nil {
@@ -43,7 +43,7 @@ func New(cfg Config, walker Walker) (*structWalker, error) {
 	}
 
 	return &structWalker{
-		tagParser: &tagParser{TagKey: cfg.TagKey},
+		tagParser: &tagParser{TagKey: tagKey},
 		walker:    walker,
 	}, nil
 }
@@ -57,7 +57,7 @@ func (s *structWalker) Walk(anyStruct interface{}) error {
 
 	switch reflectValueDereference.Kind() {
 	case reflect.Struct:
-		return s.walkFields(nil, reflectValueDereference)
+		return s.walkFields(reflectValueDereference)
 	default:
 		return fmt.Errorf("Expected a struct or pointer to struct, but received a '%s'", reflectValueDereference.Kind().String())
 	}

@@ -6,15 +6,26 @@ import (
 	"strings"
 )
 
+const (
+	iterable    = "iterable:["
+	iterableLen = len(iterable)
+
+	mapKey    = "mapKey:["
+	mapKeyLen = len(mapKey)
+
+	mapValue    = "mapValue:["
+	mapValueLen = len(mapValue)
+)
+
 type tagParser struct {
 	TagKey string
 }
 
 type tags struct {
-	fieldTags    string
-	iterableTags string
-	mapKeys      string
-	mapValues    string
+	field     string
+	iterable  string
+	mapKeys   string
+	mapValues string
 }
 
 func (t *tagParser) getTag(field reflect.StructField) string {
@@ -24,10 +35,8 @@ func (t *tagParser) getTag(field reflect.StructField) string {
 // Split out tags tags
 //
 // RETURNS
-// - struct
-// - iterable
-// - mapKeys
-// - mapValues
+// * tags  - struct containing all parsed tags
+// * error - any error encountered when parsing tags
 func (t *tagParser) filterTags(tag string) (*tags, error) {
 	tags := &tags{}
 
@@ -41,7 +50,7 @@ func (t *tagParser) filterTags(tag string) (*tags, error) {
 					return tags, err
 				}
 
-				tags.iterableTags = tag[i+iterableLen : matchedBracket]
+				tags.iterable = tag[i+iterableLen : matchedBracket]
 
 				//advance 'i' to end of matched bracket
 				i = matchedBracket
@@ -50,11 +59,40 @@ func (t *tagParser) filterTags(tag string) (*tags, error) {
 				continue
 			}
 		case 'm':
-			// TODO mapKeys and mapValues
+			if len(tag) >= i+mapKeyLen && tag[i:i+mapKeyLen] == mapKey {
+				// found the 'mapKey:[' tags
+				matchedBracket, err := matchBrackets(i+mapKeyLen, tag)
+				if err != nil {
+					return tags, err
+				}
+
+				tags.mapKeys = tag[i+mapKeyLen : matchedBracket]
+
+				//advance 'i' to end of matched bracket
+				i = matchedBracket
+
+				// skip adding to struct tag
+				continue
+			} else if len(tag) >= i+mapValueLen && tag[i:i+mapValueLen] == mapValue {
+				// found the 'mapValue:[' tags
+				matchedBracket, err := matchBrackets(i+mapValueLen, tag)
+				if err != nil {
+					return tags, err
+				}
+
+				tags.mapValues = tag[i+mapValueLen : matchedBracket]
+
+				//advance 'i' to end of matched bracket
+				i = matchedBracket
+
+				// skip adding to struct tag
+				continue
+
+			}
 		}
 
 		// everything else is added to
-		tags.fieldTags += string(tag[i])
+		tags.field += string(tag[i])
 	}
 
 	return tags, nil
