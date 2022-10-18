@@ -38,13 +38,14 @@ func (t *tagParser) getTag(field reflect.StructField) string {
 // * tags  - struct containing all parsed tags
 // * error - any error encountered when parsing tags
 func (t *tagParser) filterTags(tag string) (*tags, error) {
+	cleanSplit := true
 	tags := &tags{}
 
 	for i := 0; i < len(tag); i++ {
 		switch tag[i] {
 		case 'i':
 			// found the 'itrable:[' key
-			if len(tag) >= i+iterableLen && tag[i:i+iterableLen] == iterable {
+			if cleanSplit && len(tag) >= i+iterableLen && tag[i:i+iterableLen] == iterable {
 				matchedBracket, err := matchBrackets(i+iterableLen, tag)
 				if err != nil {
 					return tags, err
@@ -58,8 +59,10 @@ func (t *tagParser) filterTags(tag string) (*tags, error) {
 				// skip adding to struct tag
 				continue
 			}
+
+			cleanSplit = false
 		case 'm':
-			if len(tag) >= i+mapKeyLen && tag[i:i+mapKeyLen] == mapKey {
+			if cleanSplit && len(tag) >= i+mapKeyLen && tag[i:i+mapKeyLen] == mapKey {
 				// found the 'mapKey:[' tags
 				matchedBracket, err := matchBrackets(i+mapKeyLen, tag)
 				if err != nil {
@@ -73,7 +76,7 @@ func (t *tagParser) filterTags(tag string) (*tags, error) {
 
 				// skip adding to struct tag
 				continue
-			} else if len(tag) >= i+mapValueLen && tag[i:i+mapValueLen] == mapValue {
+			} else if cleanSplit && len(tag) >= i+mapValueLen && tag[i:i+mapValueLen] == mapValue {
 				// found the 'mapValue:[' tags
 				matchedBracket, err := matchBrackets(i+mapValueLen, tag)
 				if err != nil {
@@ -87,8 +90,13 @@ func (t *tagParser) filterTags(tag string) (*tags, error) {
 
 				// skip adding to struct tag
 				continue
-
 			}
+
+			cleanSplit = false
+		case ',':
+			cleanSplit = true
+		default:
+			cleanSplit = false
 		}
 
 		// everything else is added to
@@ -100,19 +108,24 @@ func (t *tagParser) filterTags(tag string) (*tags, error) {
 
 func (t *tagParser) splitTags(tag string) (map[string]string, error) {
 	parsedTags := map[string]string{}
-	tags := strings.Split(tag, ",")
 
 	if tag == "" {
 		return nil, nil
 	}
 
+	tags := strings.Split(tag, ",")
 	for _, tag := range tags {
+		// this captures complex cases where our parser leaves tags like `isStriing=true,,,` after filtering out the complex tags "iterable:[...]" for example
+		if tag == "" {
+			continue
+		}
+
 		splitTag := strings.Split(tag, "=")
 
 		if len(splitTag) == 2 {
 			parsedTags[splitTag[0]] = splitTag[1]
 		} else {
-			return parsedTags, fmt.Errorf("Invaid tag '%s'", tag)
+			return parsedTags, fmt.Errorf("Invalid tag '%s'", tag)
 		}
 	}
 
