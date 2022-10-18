@@ -13,7 +13,7 @@ type sliceMap struct {
 	SliceMap []map[string]string `validate:"minLength=2,iterable:[required=true,mapKey:[isString=true],mapValue:[canCastInt=true]]"`
 }
 
-func TestWalkerMapKeys_simple_types(t *testing.T) {
+func TestWalkerCommbination_Array_of_Maps(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	walker := &gostructwalkerfakes.FakeWalker{}
@@ -35,7 +35,7 @@ func TestWalkerMapKeys_simple_types(t *testing.T) {
 		},
 	}
 
-	structWalker.Walk(testStruct)
+	g.Expect(structWalker.Walk(testStruct)).ToNot(HaveOccurred())
 	g.Expect(walker.FieldCallbackCallCount()).To(Equal(7))
 
 	//field1 := walker.FieldCallbackArgsForCall(0)
