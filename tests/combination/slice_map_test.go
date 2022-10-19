@@ -10,7 +10,7 @@ import (
 )
 
 type sliceMap struct {
-	SliceMap []map[string]string `validate:"minLength=2,iterable:[required=true,mapKey:[isString=true],mapValue:[canCastInt=true]]"`
+	SliceMap []map[string]string `validate:"minLength=2,iterable:[required=true,mapKey[isString=true],mapValue[canCastInt=true]]"`
 }
 
 func TestWalkerCommbination_Array_of_Maps(t *testing.T) {

@@ -10,12 +10,12 @@ import (
 )
 
 type simpleMapKeys struct {
-	MapKeys map[string]string `validate:"minLength=100,mapKey:[maxLength=200]"`
+	MapKeys map[string]string `validate:"minLength=100,mapKey[maxLength=200]"`
 }
 
 type complexMapKeys struct {
 	Name           string                    `validate:"minLength=100"`
-	ComplexMapKeys map[string]complexMapKeys `validate:"minLength=200,mapKey:[required=true]"`
+	ComplexMapKeys map[string]complexMapKeys `validate:"minLength=200,mapKey[required=true]"`
 }
 
 func TestWalkerMapKeys_simple_types(t *testing.T) {

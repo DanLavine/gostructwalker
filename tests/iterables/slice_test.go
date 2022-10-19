@@ -10,15 +10,15 @@ import (
 )
 
 type simpleTestStruct struct {
-	Strings []string `validate:"minLength=100,iterable:[maxLength=200]"`
+	Strings []string `validate:"minLength=100,iterable[maxLength=200]"`
 }
 
 type complexTestStruct struct {
 	Name               string              `validate:"minLength=100"`
-	ComplexTestStructs []complexTestStruct `validate:"minLength=200,iterable:[required=true]"`
+	ComplexTestStructs []complexTestStruct `validate:"minLength=200,iterable[required=true]"`
 }
 
-func TestWalkerArrays_simple_types(t *testing.T) {
+func TestWalkerSlices_simple_types(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	walker := &gostructwalkerfakes.FakeWalker{}
@@ -29,7 +29,7 @@ func TestWalkerArrays_simple_types(t *testing.T) {
 		Strings: []string{"one", "two"},
 	}
 
-	structWalker.Walk(testStruct)
+	g.Expect(structWalker.Walk(testStruct)).ToNot(HaveOccurred())
 	g.Expect(walker.FieldCallbackCallCount()).To(Equal(3))
 
 	field1 := walker.FieldCallbackArgsForCall(0)
@@ -48,7 +48,7 @@ func TestWalkerArrays_simple_types(t *testing.T) {
 	g.Expect(field3.StructValue.Interface()).To(Equal("two"))
 }
 
-func TestWalkerArrays_complex_types(t *testing.T) {
+func TestWalkerSlices_complex_types(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	walker := &gostructwalkerfakes.FakeWalker{}

@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	iterable    = "iterable:["
+	iterable    = "iterable["
 	iterableLen = len(iterable)
 
-	mapKey    = "mapKey:["
+	mapKey    = "mapKey["
 	mapKeyLen = len(mapKey)
 
-	mapValue    = "mapValue:["
+	mapValue    = "mapValue["
 	mapValueLen = len(mapValue)
 )
 
@@ -38,69 +38,41 @@ func (t *tagParser) getTag(field reflect.StructField) string {
 // * tags  - struct containing all parsed tags
 // * error - any error encountered when parsing tags
 func (t *tagParser) filterTags(tag string) (*tags, error) {
-	cleanSplit := true
 	tags := &tags{}
 
 	for i := 0; i < len(tag); i++ {
 		switch tag[i] {
-		case 'i':
-			// found the 'itrable:[' key
-			if cleanSplit && len(tag) >= i+iterableLen && tag[i:i+iterableLen] == iterable {
-				matchedBracket, err := matchBrackets(i+iterableLen, tag)
-				if err != nil {
-					return tags, err
-				}
+		case '[':
+			// add the `[` tag for our indexing
+			i = i + 1
 
-				tags.iterable = tag[i+iterableLen : matchedBracket]
-
-				//advance 'i' to end of matched bracket
-				i = matchedBracket
-
-				// skip adding to struct tag
-				continue
+			matchedBracket, err := matchBrackets(tag[i:])
+			if err != nil {
+				return tags, err
 			}
 
-			cleanSplit = false
-		case 'm':
-			if cleanSplit && len(tag) >= i+mapKeyLen && tag[i:i+mapKeyLen] == mapKey {
-				// found the 'mapKey:[' tags
-				matchedBracket, err := matchBrackets(i+mapKeyLen, tag)
-				if err != nil {
-					return tags, err
-				}
+			finalBracket := matchedBracket + i
 
-				tags.mapKeys = tag[i+mapKeyLen : matchedBracket]
-
-				//advance 'i' to end of matched bracket
-				i = matchedBracket
-
-				// skip adding to struct tag
-				continue
-			} else if cleanSplit && len(tag) >= i+mapValueLen && tag[i:i+mapValueLen] == mapValue {
-				// found the 'mapValue:[' tags
-				matchedBracket, err := matchBrackets(i+mapValueLen, tag)
-				if err != nil {
-					return tags, err
-				}
-
-				tags.mapValues = tag[i+mapValueLen : matchedBracket]
-
-				//advance 'i' to end of matched bracket
-				i = matchedBracket
-
-				// skip adding to struct tag
-				continue
+			if i >= iterableLen && tag[i-iterableLen:i] == iterable {
+				// found the 'iterable[' tags
+				tags.iterable = tag[i:finalBracket]
+			} else if i >= mapKeyLen && tag[i-mapKeyLen:i] == mapKey {
+				// found the 'mapKey[' tags
+				tags.mapKeys = tag[i:finalBracket]
+			} else if i >= mapValueLen && tag[i-mapValueLen:i] == mapValue {
+				// found the 'mapValue[' tags
+				tags.mapValues = tag[i:finalBracket]
+			} else {
+				// everything else is added to
+				tags.field += string(tag[i:finalBracket])
 			}
 
-			cleanSplit = false
-		case ',':
-			cleanSplit = true
+			//advance 'i' to the matched bracket
+			i = finalBracket
 		default:
-			cleanSplit = false
+			// everything else is added to
+			tags.field += string(tag[i])
 		}
-
-		// everything else is added to
-		tags.field += string(tag[i])
 	}
 
 	return tags, nil
@@ -132,12 +104,12 @@ func (t *tagParser) splitTags(tag string) (map[string]string, error) {
 	return parsedTags, nil
 }
 
-// when calling match bracket, each of the parers has already found
-// keyWord:[ -- the first bracket is found
-func matchBrackets(startIndex int, tag string) (int, error) {
+// when calling this function, is should be everything after a key word:
+// - iterable[, mapKey[, mapValue[
+func matchBrackets(tag string) (int, error) {
 	bracketCounter := 1
 
-	for index, runeVal := range tag[startIndex:] {
+	for index, runeVal := range tag {
 		switch runeVal {
 		case '[':
 			bracketCounter++
@@ -146,7 +118,8 @@ func matchBrackets(startIndex int, tag string) (int, error) {
 		}
 
 		if bracketCounter == 0 {
-			return index + startIndex, nil
+			// note the + 1. This is because we want to account for indexing
+			return index, nil
 		}
 	}
 

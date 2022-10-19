@@ -1,7 +1,6 @@
 package gostructwalker
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -45,15 +44,11 @@ func (s *structWalker) walkFields(anyStruct reflect.Value) error {
 // TODO field name generation
 // TODO remove strcutParserParent
 func (s *structWalker) walkIterable(structParserParent *StructParser, tags *tags, anyValue reflect.Value) error {
-	fmt.Printf("tags: %#v\n", tags)
-
 	// On each index, we want to use tags in the `iterable:[...]` section
 	filteredTags, err := s.tagParser.filterTags(tags.iterable)
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("filtered tags: %#v\n", filteredTags)
 
 	for i := 0; i < anyValue.Len(); i++ {
 		indexedValue := anyValue.Index(i)
