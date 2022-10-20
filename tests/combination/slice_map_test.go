@@ -9,8 +9,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type sliceMap struct {
-	SliceMap []map[string]string `validate:"minLength=2,iterable:[required=true,mapKey[isString=true],mapValue[canCastInt=true]]"`
+type sliceMapFormat1 struct {
+	SliceMap []map[string]string `validate:"minLength=2,iterable[required=true,mapKey[isString=true],mapValue[canCastInt=true]]"`
+}
+
+type sliceMapFormat2 struct {
+	SliceMap []map[string]string `validate:"iterable[mapKey[isString=true],required=true,mapValue[canCastInt=true]],minLength=2"`
 }
 
 func TestWalkerCommbination_Array_of_Maps(t *testing.T) {
@@ -28,7 +32,7 @@ func TestWalkerCommbination_Array_of_Maps(t *testing.T) {
 	// field5. SliceMap[1]                - required=true
 	// field6. SliceMap[1][key "two"]     - isString=true
 	// field7. SliceMap[1]["two"] aka "2" - canCastInt=true
-	testStruct := sliceMap{
+	testStruct := sliceMapFormat1{
 		SliceMap: []map[string]string{
 			{"one": "1"},
 			{"two": "2"},
@@ -38,11 +42,11 @@ func TestWalkerCommbination_Array_of_Maps(t *testing.T) {
 	g.Expect(structWalker.Walk(testStruct)).ToNot(HaveOccurred())
 	g.Expect(walker.FieldCallbackCallCount()).To(Equal(7))
 
-	//field1 := walker.FieldCallbackArgsForCall(0)
-	//g.Expect(field1.StructState).To(Equal(gostructwalker.StructStateStruct))
-	//g.Expect(field1.ParsedTags).To(Equal(map[string]string{"minLength": "100"}))
-	//g.Expect(field1.StructField.Name).To(Equal("MapKeys"))
-	//g.Expect(field1.StructValue.Interface()).To(Equal(map[string]string{"one": "1"}))
+	field1 := walker.FieldCallbackArgsForCall(0)
+	g.Expect(field1.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field1.ParsedTags).To(Equal(map[string]string{"minLength": "2"}))
+	g.Expect(field1.StructField.Name).To(Equal("MapKeys"))
+	g.Expect(field1.StructValue.Interface()).To(Equal(map[string]string{"one": "1"}))
 
 	//field2 := walker.FieldCallbackArgsForCall(1)
 	//g.Expect(field2.StructState).To(Equal(gostructwalker.StructStateMapKey))

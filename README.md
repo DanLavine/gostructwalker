@@ -39,3 +39,5 @@ With such a complicated way of writting nested objects and types, we need to fol
 1. `iterable[...]` defines the tags to provide to each index in an iterable (Slice, Array)
 1. `mapKey[...]` defines the tags to provide for each index of a Map's keys
 1. `mapValue[...]` defines the tags to provide for each index of a Map's values
+1. Indavidual tags are seperated by a `,`
+1. Each indavidual tag is in the format `key=value`

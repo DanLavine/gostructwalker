@@ -22,7 +22,7 @@ func (s *structWalker) walkFields(anyStruct reflect.Value) error {
 			return err
 		}
 
-		// set the tags for the truct ield
+		// set the tags for the struct field
 		structParser := NewDefaultStructParser()
 		structParser.ParsedTags, err = s.tagParser.splitTags(tags.field)
 
