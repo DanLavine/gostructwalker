@@ -7,25 +7,20 @@ import (
 )
 
 const (
-	iterable    = "iterable["
-	iterableLen = len(iterable)
-
-	mapKey    = "mapKey["
-	mapKeyLen = len(mapKey)
-
-	mapValue    = "mapValue["
-	mapValueLen = len(mapValue)
+	iterable = "iterable"
+	mapKey   = "mapKey"
+	mapValue = "mapValue"
 )
 
 type tagParser struct {
 	TagKey string
 }
 
-type tags struct {
-	field     string
-	iterable  string
-	mapKeys   string
-	mapValues string
+type Tags struct {
+	Field     string
+	Iterable  string
+	MapKeys   string
+	MapValues string
 }
 
 func (t *tagParser) getTag(field reflect.StructField) string {
@@ -35,58 +30,68 @@ func (t *tagParser) getTag(field reflect.StructField) string {
 // Split out tags tags
 //
 // RETURNS
-// * tags  - struct containing all parsed tags
+// * Tags  - struct containing all parsed tags
 // * error - any error encountered when parsing tags
+func (t *tagParser) filterTags(fullTag string) (Tags, error) {
+	currentTagSection := ""
+	tags := Tags{}
 
-// TODO. This also isn't quite right. We expect `tag:"m_mapKey[...]"` to be a custome user key. This should be in the "fields", but will be parsed out
-func (t *tagParser) filterTags(tag string) (*tags, error) {
-	tags := &tags{}
+	for i := 0; i < len(fullTag); i++ {
+		switch fullTag[i] {
+		case ',':
+			if currentTagSection != "" {
+				if tags.Field == "" {
+					tags.Field = currentTagSection
+				} else {
+					tags.Field = fmt.Sprintf("%s,%s", tags.Field, currentTagSection)
+				}
 
-	for i := 0; i < len(tag); i++ {
-		switch tag[i] {
-
-		// TODO add a test with custom tag flimFlam[...] for example. Make sure this still works
+				currentTagSection = ""
+			}
 		case '[':
-			// add the `[` tag for our indexing
-			i = i + 1
-
-			matchedBracket, err := matchBrackets(tag[i:])
+			matchedBracket, err := matchBrackets(fullTag[i:])
 			if err != nil {
 				return tags, err
 			}
 
+			// align to the
 			finalBracket := matchedBracket + i
 
-			if i >= iterableLen && tag[i-iterableLen:i] == iterable {
+			switch currentTagSection {
+			case iterable:
 				// found the 'iterable[' tags
-				tags.iterable = tag[i:finalBracket]
-
-				//remove iterable from tags already set
-				// TODO is there a better way so we don't need to remove these? Kind of annoying. But the look ahead
-				// is also confusing
-				tags.field = tags.field[:len(tags.field)-iterableLen]
-			} else if i >= mapKeyLen && tag[i-mapKeyLen:i] == mapKey {
+				// don't include the '[]'
+				tags.Iterable = fullTag[i+1 : finalBracket]
+				currentTagSection = ""
+			case mapKey:
 				// found the 'mapKey[' tags
-				tags.mapKeys = tag[i:finalBracket]
-
-				//remove mapKey from tags already set
-				tags.field = tags.field[:len(tags.field)-mapKeyLen]
-			} else if i >= mapValueLen && tag[i-mapValueLen:i] == mapValue {
+				// don't include the '[]'
+				tags.MapKeys = fullTag[i+1 : finalBracket]
+				currentTagSection = ""
+			case mapValue:
 				// found the 'mapValue[' tags
-				tags.mapValues = tag[i:finalBracket]
-
-				//remove mapValue from tags already set
-				tags.field = tags.field[:len(tags.field)-mapValueLen]
-			} else {
-				// everything else is added to
-				tags.field += string(tag[i:finalBracket])
+				// don't include the '[]'
+				tags.MapValues = fullTag[i+1 : finalBracket]
+				currentTagSection = ""
+			default:
+				// everything else is added to the field tag, including the final bracket
+				currentTagSection += string(fullTag[i : finalBracket+1])
 			}
 
-			//advance 'i' to the matched bracket
+			//advance 'i' to the matcked bracket
 			i = finalBracket
 		default:
 			// everything else is added to
-			tags.field += string(tag[i])
+			currentTagSection += string(fullTag[i])
+		}
+	}
+
+	// add the ending tags
+	if currentTagSection != "" {
+		if tags.Field == "" {
+			tags.Field = currentTagSection
+		} else {
+			tags.Field = fmt.Sprintf("%s,%s", tags.Field, currentTagSection)
 		}
 	}
 
@@ -96,7 +101,7 @@ func (t *tagParser) filterTags(tag string) (*tags, error) {
 // when calling this function, is should be everything after a key word:
 // - iterable[, mapKey[, mapValue[
 func matchBrackets(tag string) (int, error) {
-	bracketCounter := 1
+	bracketCounter := 0
 
 	for index, runeVal := range tag {
 		switch runeVal {

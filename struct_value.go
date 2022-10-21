@@ -32,16 +32,14 @@ type StructParser struct {
 	StructValue reflect.Value
 
 	// Tag value for the struct location we are working on
-	ParsedTags map[string]string
+	ParsedTags Tags
 
 	// Index for an itterable (array, slice) we are processing
 	Index int
 }
 
 func NewDefaultStructParser() *StructParser {
-	return &StructParser{
-		ParsedTags: map[string]string{},
-	}
+	return &StructParser{}
 }
 
 func (sp *StructParser) GenerateFieldName(parentName string) {
