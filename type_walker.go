@@ -4,8 +4,7 @@ import (
 	"reflect"
 )
 
-// TODO field name generation
-func (s *structWalker) walkFields(anyStruct reflect.Value) error {
+func (s *structWalker) walkFields(structParserParent *StructParser, anyStruct reflect.Value) error {
 	for i := 0; i < anyStruct.NumField(); i++ {
 		structFieldValue := anyStruct.Field(i)
 
@@ -30,6 +29,15 @@ func (s *structWalker) walkFields(anyStruct reflect.Value) error {
 		structParser.StructState = StructStateStruct
 		structParser.StructField = structField
 		structParser.StructValue = structFieldValue
+		if structParserParent == nil {
+			if err := structParser.generateCurrentName(""); err != nil {
+				return err
+			}
+		} else {
+			if err := structParser.generateCurrentName(structParserParent.FieldName); err != nil {
+				return err
+			}
+		}
 
 		s.walker.FieldCallback(structParser)
 
@@ -41,8 +49,6 @@ func (s *structWalker) walkFields(anyStruct reflect.Value) error {
 	return nil
 }
 
-// TODO field name generation
-// TODO remove strcutParserParent
 func (s *structWalker) walkIterable(structParserParent *StructParser, tags Tags, anyValue reflect.Value) error {
 	// On each index, we want to use tags in the `iterable:[...]` section
 	filteredTags, err := s.tagParser.filterTags(tags.Iterable)
@@ -58,8 +64,11 @@ func (s *structWalker) walkIterable(structParserParent *StructParser, tags Tags,
 		structParser.Index = i
 		structParser.StructField = structParserParent.StructField
 		structParser.StructValue = indexedValue
-
 		structParser.ParsedTags = filteredTags
+		if err := structParser.generateCurrentName(structParserParent.FieldName); err != nil {
+			return err
+		}
+
 		s.walker.FieldCallback(structParser)
 
 		if err = s.traverse(structParser, filteredTags, indexedValue); err != nil {
@@ -70,8 +79,6 @@ func (s *structWalker) walkIterable(structParserParent *StructParser, tags Tags,
 	return nil
 }
 
-// TODO field name generation
-// TODO remove strcutParserParent
 func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyValue reflect.Value) error {
 	mapIter := anyValue.MapRange()
 
@@ -91,6 +98,10 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapKeyTags
+		if err := structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface()); err != nil {
+			return err
+		}
+
 		s.walker.FieldCallback(structParser)
 
 		// this is the entire value in the map. So this could be an array, or another map
@@ -108,6 +119,10 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapValueTags
+		if err := structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface()); err != nil {
+			return err
+		}
+
 		s.walker.FieldCallback(structParser)
 
 		s.traverse(structParser, mapValueTags, value)
@@ -116,16 +131,12 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 	return nil
 }
 
-// TODO field name generation
-// TODO remove strcutParserParent
 func (s *structWalker) traverse(structParserParent *StructParser, tags Tags, anyValue reflect.Value) error {
 	valueDereference := pointerDereference(anyValue)
 
-	//fmt.Printf("travrse kind: '%v', value: %#v\n", valueDereference.Kind(), valueDereference)
-
 	switch valueDereference.Kind() {
 	case reflect.Struct:
-		return s.walkFields(valueDereference)
+		return s.walkFields(structParserParent, valueDereference)
 	case reflect.Slice, reflect.Array:
 		return s.walkIterable(structParserParent, tags, valueDereference)
 	case reflect.Map:

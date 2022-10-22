@@ -112,7 +112,6 @@ func matchBrackets(tag string) (int, error) {
 		}
 
 		if bracketCounter == 0 {
-			// note the + 1. This is because we want to account for indexing
 			return index, nil
 		}
 	}
