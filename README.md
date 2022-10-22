@@ -41,3 +41,8 @@ With such a complicated way of writting nested objects and types, we need to fol
 1. `mapValue[...]` defines the tags to provide for each index of a Map's values
 1. Indavidual tags are seperated by a `,`
 1. Each indavidual tag is in the format `key=value`
+
+### TODO
+
+1. Field names needs to be provided in struct parser
+1. Figure out what to do with pointers. Should those pass basic fields as poointers? What about traversables?

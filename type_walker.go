@@ -121,8 +121,6 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 func (s *structWalker) traverse(structParserParent *StructParser, tags Tags, anyValue reflect.Value) error {
 	valueDereference := pointerDereference(anyValue)
 
-	//fmt.Printf("travrse kind: '%v', value: %#v\n", valueDereference.Kind(), valueDereference)
-
 	switch valueDereference.Kind() {
 	case reflect.Struct:
 		return s.walkFields(valueDereference)
