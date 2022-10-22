@@ -92,7 +92,7 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapKeyTags
-		structParser.generateCurrentName(structParserParent.FieldName)
+		structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface())
 
 		s.walker.FieldCallback(structParser)
 
@@ -111,7 +111,7 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapValueTags
-		structParser.generateCurrentName(structParserParent.FieldName)
+		structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface())
 
 		s.walker.FieldCallback(structParser)
 

@@ -38,18 +38,21 @@ func TestWalkerMapKeys_simple_types(t *testing.T) {
 
 	field1 := walker.FieldCallbackArgsForCall(0)
 	g.Expect(field1.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field1.FieldName).To(Equal("MapKeys"))
 	g.Expect(field1.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=100", MapKeys: "maxLength=200"}))
 	g.Expect(field1.StructField.Name).To(Equal("MapKeys"))
 	g.Expect(field1.StructValue.Interface()).To(Equal(map[string]string{"one": "1"}))
 
 	field2 := walker.FieldCallbackArgsForCall(1)
 	g.Expect(field2.StructState).To(Equal(gostructwalker.StructStateMapKey))
+	g.Expect(field2.FieldName).To(Equal("MapKeys[key: one]"))
 	g.Expect(field2.ParsedTags).To(Equal(gostructwalker.Tags{Field: "maxLength=200"}))
 	g.Expect(field2.StructField.Name).To(Equal("MapKeys"))
 	g.Expect(field2.StructValue.Interface()).To(Equal("one"))
 
 	field3 := walker.FieldCallbackArgsForCall(2)
 	g.Expect(field3.StructState).To(Equal(gostructwalker.StructStateMapValue))
+	g.Expect(field3.FieldName).To(Equal("MapKeys[one]"))
 	g.Expect(field3.ParsedTags).To(Equal(gostructwalker.Tags{}))
 	g.Expect(field3.StructField.Name).To(Equal("MapKeys"))
 	g.Expect(field3.StructValue.Interface()).To(Equal("1"))
