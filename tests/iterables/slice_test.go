@@ -34,12 +34,14 @@ func TestWalkerSlices_simple_types(t *testing.T) {
 
 	field1 := walker.FieldCallbackArgsForCall(0)
 	g.Expect(field1.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field1.FieldName).To(Equal("Strings"))
 	g.Expect(field1.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=100", Iterable: "maxLength=200"}))
 	g.Expect(field1.StructField.Name).To(Equal("Strings"))
 	g.Expect(field1.StructValue.Interface()).To(Equal([]string{"one", "two"}))
 
 	field2 := walker.FieldCallbackArgsForCall(1)
 	g.Expect(field2.StructState).To(Equal(gostructwalker.StructStateIterable))
+	g.Expect(field2.FieldName).To(Equal("Strings[0]"))
 	g.Expect(field2.Index).To(Equal(0))
 	g.Expect(field2.ParsedTags).To(Equal(gostructwalker.Tags{Field: "maxLength=200"}))
 	g.Expect(field2.StructField.Name).To(Equal("Strings"))
@@ -47,6 +49,7 @@ func TestWalkerSlices_simple_types(t *testing.T) {
 
 	field3 := walker.FieldCallbackArgsForCall(2)
 	g.Expect(field3.StructState).To(Equal(gostructwalker.StructStateIterable))
+	g.Expect(field3.FieldName).To(Equal("Strings[1]"))
 	g.Expect(field3.Index).To(Equal(1))
 	g.Expect(field3.ParsedTags).To(Equal(gostructwalker.Tags{Field: "maxLength=200"}))
 	g.Expect(field3.StructField.Name).To(Equal("Strings"))
@@ -88,18 +91,21 @@ func TestWalkerSlices_complex_types(t *testing.T) {
 
 	field1 := walker.FieldCallbackArgsForCall(0)
 	g.Expect(field1.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field1.FieldName).To(Equal("Name"))
 	g.Expect(field1.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=100"}))
 	g.Expect(field1.StructField.Name).To(Equal("Name"))
 	g.Expect(field1.StructValue.Interface()).To(Equal("parent"))
 
 	field2 := walker.FieldCallbackArgsForCall(1)
 	g.Expect(field2.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field2.FieldName).To(Equal("ComplexTestStructs"))
 	g.Expect(field2.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=200", Iterable: "required=true"}))
 	g.Expect(field2.StructField.Name).To(Equal("ComplexTestStructs"))
 	g.Expect(field2.StructValue.Interface()).To(Equal(childStruct))
 
 	field3 := walker.FieldCallbackArgsForCall(2)
 	g.Expect(field3.StructState).To(Equal(gostructwalker.StructStateIterable))
+	g.Expect(field3.FieldName).To(Equal("ComplexTestStructs[0]"))
 	g.Expect(field3.Index).To(Equal(0))
 	g.Expect(field3.ParsedTags).To(Equal(gostructwalker.Tags{Field: "required=true"}))
 	g.Expect(field3.StructField.Name).To(Equal("ComplexTestStructs"))
@@ -107,18 +113,21 @@ func TestWalkerSlices_complex_types(t *testing.T) {
 
 	field4 := walker.FieldCallbackArgsForCall(3)
 	g.Expect(field4.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field4.FieldName).To(Equal("ComplexTestStructs[0].Name"))
 	g.Expect(field4.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=100"}))
 	g.Expect(field4.StructField.Name).To(Equal("Name"))
 	g.Expect(field4.StructValue.Interface()).To(Equal("child one"))
 
 	field5 := walker.FieldCallbackArgsForCall(4)
 	g.Expect(field5.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field5.FieldName).To(Equal("ComplexTestStructs[0].ComplexTestStructs"))
 	g.Expect(field5.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=200", Iterable: "required=true"}))
 	g.Expect(field5.StructField.Name).To(Equal("ComplexTestStructs"))
 	g.Expect(field5.StructValue.Interface()).To(Equal([]complexTestStruct{{Name: "grandchild one"}}))
 
 	field6 := walker.FieldCallbackArgsForCall(5)
 	g.Expect(field6.StructState).To(Equal(gostructwalker.StructStateIterable))
+	g.Expect(field6.FieldName).To(Equal("ComplexTestStructs[0].ComplexTestStructs[0]"))
 	g.Expect(field6.Index).To(Equal(0))
 	g.Expect(field6.ParsedTags).To(Equal(gostructwalker.Tags{Field: "required=true"}))
 	g.Expect(field6.StructField.Name).To(Equal("ComplexTestStructs"))
@@ -126,12 +135,14 @@ func TestWalkerSlices_complex_types(t *testing.T) {
 
 	field7 := walker.FieldCallbackArgsForCall(6)
 	g.Expect(field7.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field7.FieldName).To(Equal("ComplexTestStructs[0].ComplexTestStructs[0].Name"))
 	g.Expect(field7.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=100"}))
 	g.Expect(field7.StructField.Name).To(Equal("Name"))
 	g.Expect(field7.StructValue.Interface()).To(Equal("grandchild one"))
 
 	field8 := walker.FieldCallbackArgsForCall(7)
 	g.Expect(field8.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field8.FieldName).To(Equal("ComplexTestStructs[0].ComplexTestStructs[0].ComplexTestStructs"))
 	g.Expect(field8.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=200", Iterable: "required=true"}))
 	g.Expect(field8.StructField.Name).To(Equal("ComplexTestStructs"))
 	g.Expect(field8.StructValue.Interface()).To(BeNil())
