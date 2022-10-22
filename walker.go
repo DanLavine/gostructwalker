@@ -57,7 +57,7 @@ func (s *structWalker) Walk(anyStruct interface{}) error {
 
 	switch reflectValueDereference.Kind() {
 	case reflect.Struct:
-		return s.walkFields(reflectValueDereference)
+		return s.walkFields(nil, reflectValueDereference)
 	default:
 		return fmt.Errorf("Expected a struct or pointer to struct, but received a '%s'", reflectValueDereference.Kind().String())
 	}

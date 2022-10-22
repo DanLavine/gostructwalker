@@ -4,8 +4,7 @@ import (
 	"reflect"
 )
 
-// TODO field name generation
-func (s *structWalker) walkFields(anyStruct reflect.Value) error {
+func (s *structWalker) walkFields(structParserParent *StructParser, anyStruct reflect.Value) error {
 	for i := 0; i < anyStruct.NumField(); i++ {
 		structFieldValue := anyStruct.Field(i)
 
@@ -30,6 +29,11 @@ func (s *structWalker) walkFields(anyStruct reflect.Value) error {
 		structParser.StructState = StructStateStruct
 		structParser.StructField = structField
 		structParser.StructValue = structFieldValue
+		if structParserParent == nil {
+			structParser.generateCurrentName("")
+		} else {
+			structParser.generateCurrentName(structParser.FieldName)
+		}
 
 		s.walker.FieldCallback(structParser)
 
@@ -58,8 +62,9 @@ func (s *structWalker) walkIterable(structParserParent *StructParser, tags Tags,
 		structParser.Index = i
 		structParser.StructField = structParserParent.StructField
 		structParser.StructValue = indexedValue
-
 		structParser.ParsedTags = filteredTags
+		structParser.generateCurrentName(structParser.FieldName)
+
 		s.walker.FieldCallback(structParser)
 
 		if err = s.traverse(structParser, filteredTags, indexedValue); err != nil {
@@ -91,6 +96,8 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapKeyTags
+		structParser.generateCurrentName(structParser.FieldName)
+
 		s.walker.FieldCallback(structParser)
 
 		// this is the entire value in the map. So this could be an array, or another map
@@ -108,6 +115,8 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapValueTags
+		structParser.generateCurrentName(structParser.FieldName)
+
 		s.walker.FieldCallback(structParser)
 
 		s.traverse(structParser, mapValueTags, value)
@@ -116,14 +125,13 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 	return nil
 }
 
-// TODO field name generation
 // TODO remove strcutParserParent
 func (s *structWalker) traverse(structParserParent *StructParser, tags Tags, anyValue reflect.Value) error {
 	valueDereference := pointerDereference(anyValue)
 
 	switch valueDereference.Kind() {
 	case reflect.Struct:
-		return s.walkFields(valueDereference)
+		return s.walkFields(structParserParent, valueDereference)
 	case reflect.Slice, reflect.Array:
 		return s.walkIterable(structParserParent, tags, valueDereference)
 	case reflect.Map:
