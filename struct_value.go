@@ -46,7 +46,7 @@ func NewDefaultStructParser() *StructParser {
 }
 
 // TODO add an error
-func (sp *StructParser) generateCurrentName(parentName string) {
+func (sp *StructParser) generateCurrentName(parentName string) error {
 	switch sp.StructState {
 	case StructStateStruct:
 		if parentName == "" {
@@ -57,11 +57,15 @@ func (sp *StructParser) generateCurrentName(parentName string) {
 	case StructStateIterable:
 		// iterables cannot ever be first, so don't need to check the empty case
 		sp.FieldName = fmt.Sprintf("%v[%d]", parentName, sp.Index)
+	default:
+		return fmt.Errorf("Interanl struct parsing error. Unexpected struct state. Required Struct or Iterable")
 	}
+
+	return nil
 }
 
 // TODO add an error
-func (sp *StructParser) generateCurrentNameMap(parentName string, key interface{}) {
+func (sp *StructParser) generateCurrentNameMap(parentName string, key interface{}) error {
 	switch sp.StructState {
 	case StructStateMapKey:
 		// map keys cannot ever be first, so don't need to check the empty case
@@ -69,5 +73,9 @@ func (sp *StructParser) generateCurrentNameMap(parentName string, key interface{
 	case StructStateMapValue:
 		// map values cannot ever be first, so don't need to check the empty case
 		sp.FieldName = fmt.Sprintf("%v[%v]", parentName, key)
+	default:
+		return fmt.Errorf("Interanl struct parsing error. Unexpected struct state. Required MapKey  or MapValue")
 	}
+
+	return nil
 }

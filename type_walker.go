@@ -30,9 +30,13 @@ func (s *structWalker) walkFields(structParserParent *StructParser, anyStruct re
 		structParser.StructField = structField
 		structParser.StructValue = structFieldValue
 		if structParserParent == nil {
-			structParser.generateCurrentName("")
+			if err := structParser.generateCurrentName(""); err != nil {
+				return err
+			}
 		} else {
-			structParser.generateCurrentName(structParserParent.FieldName)
+			if err := structParser.generateCurrentName(structParserParent.FieldName); err != nil {
+				return err
+			}
 		}
 
 		s.walker.FieldCallback(structParser)
@@ -61,7 +65,9 @@ func (s *structWalker) walkIterable(structParserParent *StructParser, tags Tags,
 		structParser.StructField = structParserParent.StructField
 		structParser.StructValue = indexedValue
 		structParser.ParsedTags = filteredTags
-		structParser.generateCurrentName(structParserParent.FieldName)
+		if err := structParser.generateCurrentName(structParserParent.FieldName); err != nil {
+			return err
+		}
 
 		s.walker.FieldCallback(structParser)
 
@@ -92,7 +98,9 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapKeyTags
-		structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface())
+		if err := structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface()); err != nil {
+			return err
+		}
 
 		s.walker.FieldCallback(structParser)
 
@@ -111,7 +119,9 @@ func (s *structWalker) walkMap(structParserParent *StructParser, tags Tags, anyV
 		}
 
 		structParser.ParsedTags = mapValueTags
-		structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface())
+		if err := structParser.generateCurrentNameMap(structParserParent.FieldName, key.Interface()); err != nil {
+			return err
+		}
 
 		s.walker.FieldCallback(structParser)
 
