@@ -13,11 +13,7 @@ type sliceMapFormat1 struct {
 	SliceMap []map[string]string `validate:"minLength=2,iterable[required=true,mapKey[isString=true],mapValue[canCastInt=true]]"`
 }
 
-type sliceMapFormat2 struct {
-	SliceMap []map[string]string `validate:"iterable[mapKey[isString=true],required=true,mapValue[canCastInt=true]],minLength=2"`
-}
-
-func TestWalkerCommbination_Array_of_Maps(t *testing.T) {
+func TestWalkerCommbination_Slice_of_Maps(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	walker := &gostructwalkerfakes.FakeWalker{}
