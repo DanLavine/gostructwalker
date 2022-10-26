@@ -40,12 +40,14 @@ func TestWalkerCommbination_Slice_of_Maps(t *testing.T) {
 
 	field1 := walker.FieldCallbackArgsForCall(0)
 	g.Expect(field1.StructState).To(Equal(gostructwalker.StructStateStruct))
+	g.Expect(field1.FieldName).To(Equal("SliceMap"))
 	g.Expect(field1.ParsedTags).To(Equal(gostructwalker.Tags{Field: "minLength=2", Iterable: "required=true,mapKey[isString=true],mapValue[canCastInt=true]"}))
 	g.Expect(field1.StructField.Name).To(Equal("SliceMap"))
 	g.Expect(field1.StructValue.Interface()).To(Equal([]map[string]string{{"one": "1"}, {"two": "2"}}))
 
 	field2 := walker.FieldCallbackArgsForCall(1)
 	g.Expect(field2.StructState).To(Equal(gostructwalker.StructStateIterable))
+	g.Expect(field2.FieldName).To(Equal("SliceMap[0]"))
 	g.Expect(field2.Index).To(Equal(0))
 	g.Expect(field2.ParsedTags).To(Equal(gostructwalker.Tags{Field: "required=true", MapKeys: "isString=true", MapValues: "canCastInt=true"}))
 	g.Expect(field2.StructField.Name).To(Equal("SliceMap"))
@@ -53,18 +55,21 @@ func TestWalkerCommbination_Slice_of_Maps(t *testing.T) {
 
 	field3 := walker.FieldCallbackArgsForCall(2)
 	g.Expect(field3.StructState).To(Equal(gostructwalker.StructStateMapKey))
+	g.Expect(field3.FieldName).To(Equal("SliceMap[0][key: one]"))
 	g.Expect(field3.ParsedTags).To(Equal(gostructwalker.Tags{Field: "isString=true"}))
 	g.Expect(field3.StructField.Name).To(Equal("SliceMap"))
 	g.Expect(field3.StructValue.Interface()).To(Equal("one"))
 
 	field4 := walker.FieldCallbackArgsForCall(3)
 	g.Expect(field4.StructState).To(Equal(gostructwalker.StructStateMapValue))
+	g.Expect(field4.FieldName).To(Equal("SliceMap[0][one]"))
 	g.Expect(field4.ParsedTags).To(Equal(gostructwalker.Tags{Field: "canCastInt=true"}))
 	g.Expect(field4.StructField.Name).To(Equal("SliceMap"))
 	g.Expect(field4.StructValue.Interface()).To(Equal("1"))
 
 	field5 := walker.FieldCallbackArgsForCall(4)
 	g.Expect(field5.StructState).To(Equal(gostructwalker.StructStateIterable))
+	g.Expect(field5.FieldName).To(Equal("SliceMap[1]"))
 	g.Expect(field5.Index).To(Equal(1))
 	g.Expect(field5.ParsedTags).To(Equal(gostructwalker.Tags{Field: "required=true", MapKeys: "isString=true", MapValues: "canCastInt=true"}))
 	g.Expect(field5.StructField.Name).To(Equal("SliceMap"))
@@ -72,12 +77,14 @@ func TestWalkerCommbination_Slice_of_Maps(t *testing.T) {
 
 	field6 := walker.FieldCallbackArgsForCall(5)
 	g.Expect(field6.StructState).To(Equal(gostructwalker.StructStateMapKey))
+	g.Expect(field6.FieldName).To(Equal("SliceMap[1][key: two]"))
 	g.Expect(field6.ParsedTags).To(Equal(gostructwalker.Tags{Field: "isString=true"}))
 	g.Expect(field6.StructField.Name).To(Equal("SliceMap"))
 	g.Expect(field6.StructValue.Interface()).To(Equal("two"))
 
 	field7 := walker.FieldCallbackArgsForCall(6)
 	g.Expect(field7.StructState).To(Equal(gostructwalker.StructStateMapValue))
+	g.Expect(field7.FieldName).To(Equal("SliceMap[1][two]"))
 	g.Expect(field7.ParsedTags).To(Equal(gostructwalker.Tags{Field: "canCastInt=true"}))
 	g.Expect(field7.StructField.Name).To(Equal("SliceMap"))
 	g.Expect(field7.StructValue.Interface()).To(Equal("2"))
